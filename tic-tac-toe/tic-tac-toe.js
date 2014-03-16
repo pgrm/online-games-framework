@@ -1,15 +1,14 @@
+Games = new Meteor.Collection("games");
+Colors = new Meteor.Collection("colors");
+
 if (Meteor.isClient) {
-  Template.hello.greeting = function () {
-    return "Welcome to tic-tac-toe.";
+  Template.game_field.game = function () {
+    return Games.findOne();
   };
 
-  Template.hello.events({
-    'click input': function () {
-      // template data, if any, is available in 'this'
-      if (typeof console !== 'undefined')
-        console.log("You pressed the button");
-    }
-  });
+  Template.color_list.colors = function () {
+    return Colors.find({}, {sort: {likes: -1, name: 1}});
+  };
 }
 
 if (Meteor.isServer) {
