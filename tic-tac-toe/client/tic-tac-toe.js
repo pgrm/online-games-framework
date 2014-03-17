@@ -10,9 +10,7 @@ Template.game_field.game = function () {
 // ID of currently selected game
 Session.setDefault('game_id', null);
 
-// Subscribe to 'lists' collection on startup.
-// Select a list once data has arrived.
-var gamesHandle = Meteor.subscribe('games', function () {
+var gamesHandle = Meteor.subscribe('games_list', function () {
   if (!Session.get('game_id')) {
     var game = Games.findOne();
     if (game) {
@@ -22,7 +20,6 @@ var gamesHandle = Meteor.subscribe('games', function () {
 });
 
 var gameHandle = null;
-// Always be subscribed to the todos for the selected list.
 Deps.autorun(function () {
   var game_id = Session.get('game_id');
   if (game_id) {
@@ -67,13 +64,21 @@ Template.game.any_game_selected = function () {
 };
 
 Template.game_field.rows = function () {
-  return _.map(this.field || [], function (row, index) {
+  return _.map(Games.findOne({_id: Session.get('game_id')}).field || [], function (row, index) {
     var row_index = index;
     return {index: index, cells: _.map(row || [], function (cell, index) {
       return {value: cell, row: row_index, column: index};
     })};
   });
 };
+
+Template.cell_info.events({
+  'click button': function (evt) {
+    var updateCommand = {$set: {}};
+    updateCommand.$set['field.' + this.row + '.' + this.column] = 'X';
+    Games.update({_id: Session.get('game_id')}, updateCommand);
+  }
+});
 
 ////////// Tracking selected list in URL //////////
 
@@ -83,7 +88,7 @@ var GamesRouter = Backbone.Router.extend({
   },
   main: function (game_id) {
     var oldList = Session.get("game_id");
-    if (oldList !== list_id) {
+    if (oldList !== game_id) {
       Session.set("game_id", game_id);
     }
   },
