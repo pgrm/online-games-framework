@@ -1,0 +1,73 @@
+<head>
+  <title>Tic-Tac-Toe</title>
+</head>
+
+<body>
+  <div id="main-pane">
+    {{> game}}
+  </div>
+
+  <div id="side-pane">
+    {{> games}}
+  </div>
+</body>
+
+<template name="games">
+  <h3>Active Games</h3>
+  {{#if loading}}
+    <div id="games">Loading...</div>
+  {{else}}
+    <div id="games">
+      {{#each games}}
+        <div class="game {{selected}}">
+          <div class="display">
+            <a class="game-name {{name_class}}" href="/{{_id}}">
+              {{name}}
+            </a>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+    <!--
+    <div id="createList">
+      <input type="text" id="new-list" placeholder="New list" />
+    </div>
+    -->
+  {{/if}}
+</template>
+
+<template name="game">
+  {{#if any_game_selected}}
+    <div id="game-view">
+      {{#if loading}}
+        Loading...
+      {{else}}
+        {{> game_field}}
+      {{/if}}
+    </div>
+  {{/if}}
+</template>
+
+<template name="game_field">
+  <table class="tic-tac-toe-field">
+    <tbody>
+      {{#each rows}}
+	    <tr>
+	      {{#each cells}}
+		      {{> cell_info}}
+		    {{/each}}
+      </tr>
+	  {{/each}}
+	</tbody>
+  </table>
+</template>
+
+<template name="cell_info">
+  <td>
+    {{#if value}}
+      <button disabled="true">{{value}}</button>
+    {{else}}
+      <button></button>
+    {{/if}}
+  </td>
+</template>

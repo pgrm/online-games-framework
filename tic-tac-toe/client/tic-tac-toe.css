@@ -1,0 +1,109 @@
+/* CSS declarations go here */
+
+table.tic-tac-toe-field td {
+  margin: 0px;
+  height: 40px;
+  width: 40px;
+  
+  /*border-style: solid;
+  border-width: 1px;
+  border-color: black;*/
+}
+
+table.tic-tac-toe-field td button {
+  width: 100%;
+  height: 100%;
+  
+  font-size: 20pt;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+}
+
+ul {
+  list-style: none;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-size: 16px;
+  line-height: 1.5;
+  background: #eeeeee;
+  color: #333333;
+}
+
+body, input {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+input {
+  font-size: 100%;
+}
+
+a, a:visited, a:active {
+  color: #258;
+}
+
+h3 {
+  font-weight: bold;
+  text-decoration: underline;
+  font-size: 120%;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+#main-pane, #side-pane {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+#main-pane {
+  top: 20px;
+  bottom: 0;
+  left: 220px;
+  overflow: auto;
+}
+
+#side-pane {
+  width: 200px;
+  right: auto;
+  overflow: auto;
+  background: #eee;
+  border-right: 1px solid #999;
+  background: #ddd;
+}
+
+#games .game {
+  padding: 3px 6px;
+}
+
+#games .selected {
+  padding: 2px 6px;
+  background: #9be;
+  font-weight: bold;
+}
+
+#games .game-name {
+  cursor: pointer;
+  color: black;
+  text-decoration: none;
+}
+
+#createGame {
+  padding: 3px 6px;
+  margin-top: 5px;
+}
+
+#game-view {
+  margin-top: 5px;
+  margin-left: 5px;
+}
