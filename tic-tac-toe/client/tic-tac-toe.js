@@ -47,6 +47,14 @@ Template.games.events({
     // prevent clicks on <a> from refreshing the page.
     evt.preventDefault();
   },
+  'click #newGame': function (evt) {
+    var newGameId = Games.insert({
+      nextPlayer: 'X',
+      playersQueue: ['O'],
+      field: [['', '', ''], ['', '', ''], ['', '', '']]
+    });
+    Router.setGame(newGameId);
+  }
 });
 
 Template.games.selected = function () {
@@ -74,9 +82,16 @@ Template.game_field.rows = function () {
 
 Template.cell_info.events({
   'click button': function (evt) {
-    var updateCommand = {$set: {}};
-    updateCommand.$set['field.' + this.row + '.' + this.column] = 'X';
-    Games.update({_id: Session.get('game_id')}, updateCommand);
+    var game_id = Session.get('game_id');
+    var game = Games.findOne({_id: game_id});
+    var updateCommand = {
+      $set: {nextPlayer: game.playersQueue.shift()},
+      $push: {playersQueue: game.nextPlayer}
+    };
+
+    updateCommand.$set['field.' + this.row + '.' + this.column] = game.nextPlayer;
+    Games.update({_id: game_id}, updateCommand);
+    Games.update({_id: game_id}, {$pop: {playersQueue: -1}});
   }
 });
 
@@ -97,7 +112,7 @@ var GamesRouter = Backbone.Router.extend({
   }
 });
 
-Router = new GamesRouter;
+Router = new GamesRouter();
 
 Meteor.startup(function () {
   Backbone.history.start({pushState: true});
