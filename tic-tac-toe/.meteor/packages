@@ -9,3 +9,8 @@ preserve-inputs
 underscore
 backbone
 jquery
+accounts-ui
+accounts-base
+accounts-password
+accounts-facebook
+accounts-google

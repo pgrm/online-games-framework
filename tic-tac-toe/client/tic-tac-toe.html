@@ -3,13 +3,22 @@
 </head>
 
 <body>
-  <div id="main-pane">
-    {{> game}}
-  </div>
+  {{#if loggingIn}}
+     Logging in ...
+  {{else}}
+    {{#if currentUser}}
+      <div id="main-pane">
+        {{> game}}
+      </div>
 
-  <div id="side-pane">
-    {{> games}}
-  </div>
+      <div id="side-pane">
+        {{loginButtons}}
+        {{> games}}
+      </div>
+    {{else}}
+      {{loginButtons}}
+    {{/if}}
+  {{/if}}
 </body>
 
 <template name="games">

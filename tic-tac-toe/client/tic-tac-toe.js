@@ -51,8 +51,10 @@ Template.games.events({
     var newGameId = Games.insert({
       nextPlayer: 'X',
       playersQueue: ['O'],
-      field: [['', '', ''], ['', '', ''], ['', '', '']]
+      field: [['', '', ''], ['', '', ''], ['', '', '']],
+      players: [{X: Meteor.userId()}, {Y: null}]
     });
+    
     Router.setGame(newGameId);
   }
 });
