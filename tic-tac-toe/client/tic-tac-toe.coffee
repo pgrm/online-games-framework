@@ -7,6 +7,7 @@ Template.game_field.game = () -> Games.findOne()
 
 # ID of currently selected game
 Session.setDefault('game_id', null)
+Session.setDefault('selected_field', null)
 
 gamesHandle = Meteor.subscribe('games_list', () ->
   if (!Session.get('game_id'))
@@ -14,13 +15,6 @@ gamesHandle = Meteor.subscribe('games_list', () ->
     if (game)
       Router.setGame(game._id)
 )
-
-#userHandle = Meteor.subscribe('user_data', () ->
-#  if (!Session.get('game_id'))
-#    game_id = game.id for game in Meteor.user().games.reverse() when game.state == 'active'
-#    if (game_id)
-#      Router.setGame(game_id)
-#)
 
 gameHandle = null
 Deps.autorun(() ->
@@ -37,8 +31,6 @@ Deps.autorun(() ->
 #////////// Games - List //////////
 
 Template.games.loading_games = () -> !gamesHandle.ready()
-#Template.games.loading_user = () -> !userHandle.ready()
-#Template.games.games = () -> Games.find()
 
 Template.games.active_games = () -> allPlayersGames('active')
 Template.games.won_games = () -> allPlayersGames('won')
@@ -70,29 +62,47 @@ Template.game.loading_game = () -> (gameHandle && !gameHandle.ready()) || !curre
 Template.game.any_game_selected = () -> !Session.equals('game_id', null)
 
 Template.game_field.rows = () ->
+  selectedField = Session.get('selected_field')
+
   _.map(currentGame().field || [], (row, index) ->
     row_index = index
     {index: index, cells: _.map(row || [], (cell, index) ->
-      {value: cell, row: row_index, column: index}
+      cellObject = {value: cell, row: row_index, column: index}
+
+      if (selectedField)
+        if (row_index == selectedField.row && index == selectedField.column)
+          cellObject.value = currentPlayer()
+
+      return cellObject
     )}
   )
 
 Template.cell_info.events({
   'click button': (evt) ->
-    game_id = Session.get('game_id')
-    game = Games.findOne({_id: game_id})
-    updateCommand = {
-      $set: {nextPlayer: game.playersQueue.shift()},
-      $push: {playersQueue: game.nextPlayer}
-    }
-
-    updateCommand.$set['field.' + this.row + '.' + this.column] = game.nextPlayer
-    Games.update({_id: game_id}, updateCommand)
-    Games.update({_id: game_id}, {$pop: {playersQueue: -1}})
+    move = {row: this.row, column: this.column}
+    Session.set('selected_field', move)
+    Meteor.call('play_move', Session.get('game_id'), move, (error, data) ->
+        console.log(error)
+        console.log(data)
+        Session.set('selected_field', null))
+#    game_id = Session.get('game_id')
+#    game = Games.findOne({_id: game_id})
+#    updateCommand = {
+#      $set: {nextPlayer: game.playersQueue.shift()},
+#      $push: {playersQueue: game.nextPlayer}
+#    }
+#
+#    updateCommand.$set['field.' + this.row + '.' + this.column] = game.nextPlayer
+#    Games.update({_id: game_id}, updateCommand)
+#    Games.update({_id: game_id}, {$pop: {playersQueue: -1}})
 })
 
 currentGame = () ->
   Games.findOne({_id: Session.get('game_id')})
+
+currentPlayer = () ->
+  game = currentGame()
+  game.availablePlayers[game.playerIDs.indexOf(Meteor.userId())]
 
 #////////// Tracking selected list in URL //////////
 

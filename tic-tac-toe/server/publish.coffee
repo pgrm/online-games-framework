@@ -12,6 +12,7 @@ Meteor.publish('game', (game_id) -> Games.find({$and: [{_id: game_id}, {playerID
 Meteor.methods({
   create_new_game: -> t.create_new_game(this.userId)
   join_game: (gameId) -> t.join_game(this.userId, gameId)
+  play_move: (gameId, move) -> t.play_move(this.userId, gameId, move)
 })
 
 
@@ -25,3 +26,4 @@ check_user = (userId) ->
 Y(TicTacToe).when
   create_new_game: (userId) -> check_user(userId)
   join_game: (userId) -> check_user(userId)
+  play_move: (userId) -> check_user(userId)
