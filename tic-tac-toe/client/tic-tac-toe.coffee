@@ -26,7 +26,10 @@ gameHandle = null
 Deps.autorun(() ->
   game_id = Session.get('game_id')
   if (game_id)
-    gameHandle = Meteor.subscribe('game', game_id)
+    gameHandle = Meteor.subscribe('game', game_id, () ->
+        if (!currentGame())
+          Meteor.call('join_game', game_id)
+    )
   else
     gameHandle = null
 );

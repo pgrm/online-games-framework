@@ -13,7 +13,7 @@ class TicTacToe
 
   join_game: (playerId, gameId) ->
     game = @get_game(gameId)
-    if (game.players.length < game.playerIDs.length)
+    if (game.playerIDs.length < game.players.length)
       return @update_game(gameId, {$push: {playerIDs: playerId}})
     else
       throw new Meteor.Error(403, "The game is already full.")

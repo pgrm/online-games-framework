@@ -7,7 +7,7 @@ t = new TicTacToe()
 
 # Publish complete set of lists to all clients.
 Meteor.publish('games_list', -> Games.find({playerIDs: {$in: [this.userId]}}))
-Meteor.publish('game', (game_id) -> Games.find({_id: game_id}))
+Meteor.publish('game', (game_id) -> Games.find({$and: [{_id: game_id}, {playerIDs: {$in: [this.userId]}}]}))
 
 Meteor.methods({
   create_new_game: -> t.create_new_game(this.userId)
