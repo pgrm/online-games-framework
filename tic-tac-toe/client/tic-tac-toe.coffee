@@ -10,10 +10,17 @@ Session.setDefault('game_id', null)
 
 gamesHandle = Meteor.subscribe('games_list', () ->
   if (!Session.get('game_id'))
-    game = Games.findOne()
+    game = Games.findOne({playerIDs: {$in: [Meteor.userId()]}})
     if (game)
       Router.setGame(game._id)
 )
+
+#userHandle = Meteor.subscribe('user_data', () ->
+#  if (!Session.get('game_id'))
+#    game_id = game.id for game in Meteor.user().games.reverse() when game.state == 'active'
+#    if (game_id)
+#      Router.setGame(game_id)
+#)
 
 gameHandle = null
 Deps.autorun(() ->
@@ -26,18 +33,27 @@ Deps.autorun(() ->
 
 #////////// Games - List //////////
 
-Template.games.loading = () -> !gamesHandle.ready()
-Template.games.games = () -> Games.find()
+Template.games.loading_games = () -> !gamesHandle.ready()
+#Template.games.loading_user = () -> !userHandle.ready()
+#Template.games.games = () -> Games.find()
+
+Template.games.active_games = () -> allPlayersGames('active')
+Template.games.won_games = () -> allPlayersGames('won')
+Template.games.lost_games = () -> allPlayersGames('lost')
+
+Template.games.description = () -> this._id
 
 Template.games.events({
   'mousedown .game': ((evt) -> Router.setGame(this._id)),
   'click .game': ((evt) -> evt.preventDefault()),
   'click #newGame': (evt) ->
     newGameId = Games.insert({
+      state: 'active',
       nextPlayer: 'X',
       playersQueue: ['O'],
       field: [['', '', ''], ['', '', ''], ['', '', '']],
-      players: [{X: Meteor.userId()}, {Y: null}]
+      players: ['X', 'O'],
+      playerIDs: [Meteor.userId()]
     })
     
     Router.setGame(newGameId)
@@ -45,13 +61,21 @@ Template.games.events({
 
 Template.games.selected = () -> if Session.equals('game_id', this._id) then 'selected' else ''
 
+allPlayersGames = (state) ->
+  currentPlayer = {playerIDs: {$in: [Meteor.userId()]}}
+  switch state
+    when 'active' then conditions = {$and: [{state: state}, currentPlayer]}
+    when 'won' then conditions = {$and: [{state: 'finnished'}, {winner: Meteor.userId()}]}
+    else conditions = {$and: [{state: 'finnished'}, currentPlayer]}
+  Games.find(conditions)
+
 #////////// Selected Game //////////
 
-Template.game.loading = () -> gameHandle && !gameHandle.ready()
+Template.game.loading_game = () -> (gameHandle && !gameHandle.ready()) || !currentGame()
 Template.game.any_game_selected = () -> !Session.equals('game_id', null)
 
 Template.game_field.rows = () ->
-  _.map(Games.findOne({_id: Session.get('game_id')}).field || [], (row, index) ->
+  _.map(currentGame().field || [], (row, index) ->
     row_index = index
     {index: index, cells: _.map(row || [], (cell, index) ->
       {value: cell, row: row_index, column: index}
@@ -71,6 +95,9 @@ Template.cell_info.events({
     Games.update({_id: game_id}, updateCommand)
     Games.update({_id: game_id}, {$pop: {playersQueue: -1}})
 })
+
+currentGame = () ->
+  Games.findOne({_id: Session.get('game_id')})
 
 #////////// Tracking selected list in URL //////////
 

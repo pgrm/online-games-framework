@@ -82,17 +82,17 @@ h3 {
   background: #ddd;
 }
 
-#games .game {
+.games .game {
   padding: 3px 6px;
 }
 
-#games .selected {
+.games .selected {
   padding: 2px 6px;
   background: #9be;
   font-weight: bold;
 }
 
-#games .game-name {
+.games .game-name {
   cursor: pointer;
   color: black;
   text-decoration: none;
