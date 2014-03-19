@@ -46,17 +46,9 @@ Template.games.description = () -> this._id
 Template.games.events({
   'mousedown .game': ((evt) -> Router.setGame(this._id)),
   'click .game': ((evt) -> evt.preventDefault()),
-  'click #newGame': (evt) ->
-    newGameId = Games.insert({
-      state: 'active',
-      nextPlayer: 'X',
-      playersQueue: ['O'],
-      field: [['', '', ''], ['', '', ''], ['', '', '']],
-      players: ['X', 'O'],
-      playerIDs: [Meteor.userId()]
-    })
-    
-    Router.setGame(newGameId)
+  'click #newGame': ((evt) ->
+    newGameId = Meteor.call('create_new_game', (error, newGameId) -> Router.setGame(newGameId))
+  )
 })
 
 Template.games.selected = () -> if Session.equals('game_id', this._id) then 'selected' else ''
