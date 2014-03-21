@@ -85,16 +85,6 @@ Template.cell_info.events({
         console.log(error)
         console.log(data)
         Session.set('selected_field', null))
-#    game_id = Session.get('game_id')
-#    game = Games.findOne({_id: game_id})
-#    updateCommand = {
-#      $set: {nextPlayer: game.playersQueue.shift()},
-#      $push: {playersQueue: game.nextPlayer}
-#    }
-#
-#    updateCommand.$set['field.' + this.row + '.' + this.column] = game.nextPlayer
-#    Games.update({_id: game_id}, updateCommand)
-#    Games.update({_id: game_id}, {$pop: {playersQueue: -1}})
 })
 
 currentGame = () ->
