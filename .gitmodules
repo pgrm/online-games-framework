@@ -1,0 +1,3 @@
+[submodule "tic-tac-toe/test/rtd"]
+	path = tic-tac-toe/test/rtd
+	url = git@github.com:xolvio/rtd.git
