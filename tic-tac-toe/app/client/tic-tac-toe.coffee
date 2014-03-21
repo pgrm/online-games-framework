@@ -17,16 +17,16 @@ gamesHandle = Meteor.subscribe('games_list', () ->
 )
 
 gameHandle = null
-Deps.autorun(() ->
+Deps.autorun( ->
   game_id = Session.get('game_id')
   if (game_id)
     gameHandle = Meteor.subscribe('game', game_id, () ->
-        if (!currentGame())
-          Meteor.call('join_game', game_id)
+      if (!currentGame())
+        Meteor.call('join_game', game_id)
     )
   else
     gameHandle = null
-);
+)
 
 #////////// Games - List //////////
 
@@ -42,24 +42,31 @@ Template.games.events({
   'mousedown .game': ((evt) -> Router.setGame(this._id)),
   'click .game': ((evt) -> evt.preventDefault()),
   'click #newGame': ((evt) ->
-    newGameId = Meteor.call('create_new_game', (error, newGameId) -> Router.setGame(newGameId))
+    newGameId = Meteor.call('create_new_game', (error, newGameId) ->
+      Router.setGame(newGameId))
   )
 })
 
-Template.games.selected = () -> if Session.equals('game_id', this._id) then 'selected' else ''
+Template.games.selected = ->
+  if Session.equals('game_id', this._id) then 'selected' else ''
 
 allPlayersGames = (state) ->
   currentPlayer = {playerIDs: {$in: [Meteor.userId()]}}
   switch state
-    when 'active' then conditions = {$and: [{state: state}, currentPlayer]}
-    when 'won' then conditions = {$and: [{state: 'finnished'}, {winner: Meteor.userId()}]}
-    else conditions = {$and: [{state: 'finnished'}, currentPlayer]}
+    when 'active'
+      conditions = {$and: [{state: state}, currentPlayer]}
+    when 'won'
+      conditions = {$and: [{state: 'finnished'}, {winner: Meteor.userId()}]}
+    else
+      conditions = {$and: [{state: 'finnished'}, currentPlayer]}
   Games.find(conditions)
 
 #////////// Selected Game //////////
 
-Template.game.loading_game = () -> (gameHandle && !gameHandle.ready()) || !currentGame()
-Template.game.any_game_selected = () -> !Session.equals('game_id', null)
+Template.game.loading_game = ->
+  (gameHandle && !gameHandle.ready()) || !currentGame()
+
+Template.game.any_game_selected = -> !Session.equals('game_id', null)
 
 Template.game_field.rows = () ->
   selectedField = Session.get('selected_field')
@@ -82,9 +89,9 @@ Template.cell_info.events({
     move = {row: this.row, column: this.column}
     Session.set('selected_field', move)
     Meteor.call('play_move', Session.get('game_id'), move, (error, data) ->
-        console.log(error)
-        console.log(data)
-        Session.set('selected_field', null))
+      console.log(error)
+      console.log(data)
+      Session.set('selected_field', null))
 })
 
 currentGame = () ->

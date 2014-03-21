@@ -1,20 +1,26 @@
-# source from https://raw.github.com/raganwald/YouAreDaChef/master/lib/YouAreDaChef.coffee
+# source from
+# https://raw.github.com/raganwald/YouAreDaChef/master/lib/YouAreDaChef.coffee
 #
 #### LICENCE:
 # Copyright (c) 2011-2012 Reginald Braithwaite
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
-# documentation files (the "Software"), to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
-# and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
 # The above copyright notice and this permission notice shall be included
 # in all copies or substantial portions of the Software.
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
-# OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
 
 class Combinator
   constructor: (args...) ->
@@ -54,7 +60,8 @@ class Combinator
           @clazzes(clazz_arg...)
         else if _.isFunction(clazz_arg)
           @clazzes(clazz_arg)
-        else throw "What do I do with { #{@namespace()}: #{clazz_arg} }?"
+        else
+          throw new Error "What do I do with { #{@namespace()}: #{clazz_arg} }?"
     this
 
   advise: (verb, advice, namespace, clazzes, pointcut_exprs) ->
@@ -63,7 +70,7 @@ class Combinator
       _advice = advice
       advice = (args...) ->
         !_advice.apply(this, args)
-    throw "Need to define one or more classes" unless clazzes.length
+    throw new Error "Need to define one or more classes" unless clazzes.length
     _.each clazzes, (clazz) ->
       daemonize = (name, inject = []) ->
         daemonology = (clazz.__YouAreDaChef ?= {})[name] ?= {}
@@ -113,14 +120,16 @@ class Combinator
             daemon_args = inject.concat args
             # try a super-daemon if available
             if clazz.__super__?["guard_#{name}_daemon"]?
-              return false unless clazz.__super__?["guard_#{name}_daemon"].apply(this, args)
+              return false unless clazz.__super__?["guard_#{name}_daemon"].
+                apply(this, args)
             # specific daemons
             for daemon in daemonology.guard
               return false unless daemon[1].apply(this, daemon_args)
             true
 
         # this patches the original method to call advices and pass match data
-        unless clazz.prototype.hasOwnProperty(name) and daemonology.default.length > 0
+        unless clazz.prototype.hasOwnProperty(name) and
+        daemonology.default.length > 0
           if _.include(_.keys(clazz.prototype), name)
             daemonology.default.push ['Combinator: 1', clazz.prototype[name]]
           else if clazz.__super__?
@@ -133,12 +142,13 @@ class Combinator
             ]
           else
             daemonology.default.push ['Combinator: 1', (args...) ->
-              throw 'No method or superclass defined for ' + name
+              throw new Error 'No method or superclass defined for ' + name
             ]
           clazz.prototype[name] = (args...) ->
             if clazz.prototype["guard_#{name}_daemon"].apply(this, args)
               clazz.prototype["before_#{name}_daemon"].apply(this, args)
-              _.tap clazz.prototype["around_#{name}_daemon"].call(this, _.last(daemonology.default)[1], args...), (retv) =>
+              _.tap clazz.prototype["around_#{name}_daemon"].
+              call(this, _.last(daemonology.default)[1], args...), (retv) =>
                 clazz.prototype["after_#{name}_daemon"].apply(this, args)
 
         # Add the advice to the appropriate list
@@ -160,17 +170,24 @@ class Combinator
             advice = [key, advice[key]]
         daemonology[verb].push advice
 
-      if pointcut_exprs.length is 1 and (expr = pointcut_exprs[0]) instanceof RegExp
+      if pointcut_exprs.length is 1 and
+      (expr = pointcut_exprs[0]) instanceof RegExp
+
         _.each _.functions(clazz.prototype), (name) ->
           if match_data = name.match(expr)
             daemonize name, match_data
       else
         _.each pointcut_exprs, (name) ->
           if _.isString(name)
-            if verb is 'default' and !clazz.prototype["before_#{name}_daemon"] and _.isFunction(advice) # not hasOwnProperty, anywhere in the chain!
+            if verb is 'default' and
+            !clazz.prototype["before_#{name}_daemon"] and
+            _.isFunction(advice) # not hasOwnProperty, anywhere in the chain!
+
               clazz.prototype[name] = advice
             else daemonize name
-          else throw 'Specify a pointcut with a single regular expression or a list of strings'
+          else
+            throw new Error 'Specify a pointcut with a single regular ' +
+                            'expression or a list of strings'
 
       clazz.__YouAreDaChef
 
@@ -188,7 +205,7 @@ _.each ['default', 'before', 'around', 'after', 'guard', 'unless'], (verb) ->
       # classic syntax
       [pointcut_exprs..., advice] = args
       @advise verb, advice, @namespace(), @clazzes(), pointcut_exprs
-    else throw "What do I do with #{args} for #{verb}?"
+    else throw new Error "What do I do with #{args} for #{verb}?"
     this
 
 Combinator::def = Combinator::define = Combinator::default
@@ -201,10 +218,11 @@ Combinator::clazz = Combinator::clazzes
 YouAreDaChef = (args...) ->
   new Combinator(args...)
 
-_.each ['for', 'namespace', 'clazz', 'method', 'clazzes', 'methods', 'tag'], (definition_method_name) ->
-  YouAreDaChef[definition_method_name] = (args...) ->
-    _.tap new Combinator(), (combinator) ->
-      combinator[definition_method_name](args...)
+_.each ['for', 'namespace', 'clazz', 'method', 'clazzes', 'methods', 'tag'],
+  (definition_method_name) ->
+    YouAreDaChef[definition_method_name] = (args...) ->
+      _.tap new Combinator(), (combinator) ->
+        combinator[definition_method_name](args...)
 
 _.extend YouAreDaChef,
   inspect: (clazz) ->

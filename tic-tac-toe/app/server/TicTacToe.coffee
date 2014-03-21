@@ -20,7 +20,8 @@ class TicTacToe
 
   join_game: ->
     if (@game.playerIDs.length < @game.availablePlayers.length)
-      return @update_game({$push: {playerIDs: @playerId, playersQueue: @playerId}})
+      return @update_game(
+        {$push: {playerIDs: @playerId, playersQueue: @playerId}})
     else
       throw new Meteor.Error(403, "The game is already full.")
 
@@ -61,7 +62,8 @@ class TicTacToe
       $push: {playersQueue: @game.nextPlayer}
     }
 
-    updateCommand.$set['field.' + move.row + '.' + move.column] = @current_player_sign()
+    cellProperty = "field.#{move.row}.#{move.column}"
+    updateCommand.$set[cellProperty] = @current_player_sign()
     @update_game(updateCommand)
     @update_game({$pop: {playersQueue: -1}})
 
@@ -98,9 +100,11 @@ class TicTacToe
           if (j - lineLength) >= (@game.field[i].length - requiredLineLength)
             break
 
-  current_player_sign: -> @game.availablePlayers[@game.playerIDs.indexOf(@playerId)]
+  current_player_sign: ->
+    @game.availablePlayers[@game.playerIDs.indexOf(@playerId)]
 
-  calc_players_line_length: (playerSign, oldLineLength) -> if playerSign == '' then 0 else oldLineLength + 1
+  calc_players_line_length: (playerSign, oldLineLength) ->
+    if playerSign == '' then 0 else oldLineLength + 1
 
   games: -> share.Games
 
