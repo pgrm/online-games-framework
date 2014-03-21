@@ -19,3 +19,5 @@ node_modules
 
 **/.idea/*
 *.swp
+
+**/build/mirror_app/*
