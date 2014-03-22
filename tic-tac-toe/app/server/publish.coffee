@@ -13,21 +13,11 @@ Meteor.publish('game', (game_id) ->
 
 Meteor.methods({
   create_new_game: ->
-    check_user(this.userId)
     new TicTacToe(this.userId).create_new_game()
 
   join_game: (gameId) ->
-    check_user(this.userId)
     new TicTacToe(this.userId, gameId).join_game()
 
   play_move: (gameId, move) ->
-    check_user(this.userId)
     new TicTacToe(this.userId, gameId).play_move(move)
 })
-
-
-check_user = (userId) ->
-  if (userId)
-    return true
-  else
-    throw new Meteor.Error(401, "You must be logged in")

@@ -1,46 +1,12 @@
-class TicTacToe
-  constructor: (playerId, gameId = null) ->
-    @playerId = playerId
-    @gameId = gameId
-    if (gameId)
-      @game = load_game()
+class TicTacToe extends Game
+  get_empty_game: ->
+    emptyGame = super
+    emptyGame.field = [['', '', ''], ['', '', ''], ['', '', '']]
+    emptyGame.availablePlayers = ['X', 'O']
+    return emptyGame
 
 
-  create_new_game: ->
-    @games().insert({
-      state: 'active',
-      nextPlayer: @playerId,
-      playersQueue: [],
-      field: [['', '', ''], ['', '', ''], ['', '', '']],
-      availablePlayers: ['X', 'O'],
-      playerIDs: [@playerId],
-      when: new Date()
-    })
-
-
-  join_game: ->
-    if (@game.playerIDs.length < @game.availablePlayers.length)
-      return @update_game(
-        {$push: {playerIDs: @playerId, playersQueue: @playerId}})
-    else
-      throw new Meteor.Error(403, "The game is already full.")
-
-
-  play_move: (move) ->
-    @check_if_move_is_valid(move)
-    @perform_move(move)
-    @check_if_game_is_finnished()
-
-
-  load_game: ->
-    if (@game)
-      return @game
-
-    @game = @games().findOne({_id: @gameId})
-    if (!@game)
-      throw new Meteor.Error(404, "The game does not exist.")
-    else
-      return @game
+  can_join_game: -> @game.playerIDs.length < @game.availablePlayers.length
 
 
   check_if_move_is_valid: (move) ->
@@ -66,13 +32,6 @@ class TicTacToe
     updateCommand.$set[cellProperty] = @current_player_sign()
     @update_game(updateCommand)
     @update_game({$pop: {playersQueue: -1}})
-
-
-  update_game: (updateCommand) ->
-    updateCommand.$set ||= {}
-    updateCommand.$set.when = new Date()
-
-    @games().update({_id: @gameId}, updateCommand)
 
 
   check_if_game_is_finnished: ->
@@ -105,8 +64,5 @@ class TicTacToe
 
   calc_players_line_length: (playerSign, oldLineLength) ->
     if playerSign == '' then 0 else oldLineLength + 1
-
-  games: -> share.Games
-
 
 share.TicTacToe = TicTacToe

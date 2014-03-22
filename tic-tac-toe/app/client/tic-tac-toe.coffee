@@ -3,15 +3,13 @@
 
 Games = new Meteor.Collection("games")
 
-Template.game_field.game = () -> Games.findOne()
-
 # ID of currently selected game
 Session.setDefault('game_id', null)
 Session.setDefault('selected_field', null)
 
 gamesHandle = Meteor.subscribe('games_list', () ->
   if (!Session.get('game_id'))
-    game = Games.findOne({playerIDs: {$in: [Meteor.userId()]}})
+    game = Games.findOne()
     if (game)
       Router.setGame(game._id)
 )
@@ -30,19 +28,21 @@ Deps.autorun( ->
 
 #////////// Games - List //////////
 
-Template.games.loading_games = () -> !gamesHandle.ready()
+Template.games.loading_games = -> !gamesHandle.ready()
 
-Template.games.active_games = () -> allPlayersGames('active')
-Template.games.won_games = () -> allPlayersGames('won')
-Template.games.lost_games = () -> allPlayersGames('lost')
+Template.games.active_games = -> allPlayersGames('active')
+Template.games.won_games = -> allPlayersGames('won')
+Template.games.lost_games = -> allPlayersGames('lost')
 
-Template.games.description = () -> this._id
+Template.games.description = -> this._id
 
 Template.games.events({
   'mousedown .game': ((evt) -> Router.setGame(this._id)),
   'click .game': ((evt) -> evt.preventDefault()),
   'click #newGame': ((evt) ->
-    newGameId = Meteor.call('create_new_game', (error, newGameId) ->
+    Meteor.call('create_new_game', (error, newGameId) ->
+      if error then console.log(error)
+
       Router.setGame(newGameId))
   )
 })
