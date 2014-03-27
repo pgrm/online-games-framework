@@ -12,7 +12,7 @@ class @Game extends SecuredObject
 
   join_game: ->
     if (@can_join_game())
-      return @update_game(
+      return @update_game(( -> @can_join_game()),
         {$push: {playerIDs: @playerId, playersQueue: @playerId}})
     else
       throw new Meteor.Error(403, "The game is already full.")
@@ -35,7 +35,10 @@ class @Game extends SecuredObject
   load_game: ->
     if (@game)
       return @game
+    else
+      return @reload_game()
 
+  reload_game: ->
     @game = @games().findOne({_id: @gameId})
     if (!@game)
       throw new Meteor.Error(404, "The game does not exist.")
@@ -43,12 +46,17 @@ class @Game extends SecuredObject
       return @game
 
 
-  update_game: (updateCommand) ->
-    updateCommand.$set ||= {}
-    updateCommand.$set.when = new Date()
+  update_game: (checkCondition, updateCommands...) ->
+    #lockGame
+    @game = @reload_game()
 
-    @games().update({_id: @gameId}, updateCommand)
+    if (checkCondition())
+      for updateCommand in updateCommands
+        updateCommand.$set ||= {}
+        updateCommand.$set.when = new Date()
+        @games().update({_id: @gameId}, updateCommand)
 
+    #unlockGame
 
   can_join_game: -> false
 

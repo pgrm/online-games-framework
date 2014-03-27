@@ -30,8 +30,9 @@ class TicTacToe extends Game
 
     cellProperty = "field.#{move.row}.#{move.column}"
     updateCommand.$set[cellProperty] = @current_player_sign()
-    @update_game(updateCommand)
-    @update_game({$pop: {playersQueue: -1}})
+
+    @update_game((-> @check_if_move_is_valid(move)),
+      updateCommand, {$pop: {playersQueue: -1}})
 
 
   check_if_game_is_finnished: ->
@@ -64,5 +65,3 @@ class TicTacToe extends Game
 
   calc_players_line_length: (playerSign, oldLineLength) ->
     if playerSign == '' then 0 else oldLineLength + 1
-
-share.TicTacToe = TicTacToe
